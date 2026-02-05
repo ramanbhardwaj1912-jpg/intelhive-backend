@@ -10,9 +10,6 @@ export default async function intelHiveController(req: Request, res: Response) {
   const body = req.body as IncomingRequest;
   const session: Session = getSession(body.sessionId, body?.metadata);
 
-  console.log("Request hit: ", body);
-  console.log("Session before processing: ", session);
-
   // Initialize session messages if empty
   if (session.messages.length == 0 && body.conversationHistory.length > 0) {
     session.messages = body.conversationHistory;
@@ -38,6 +35,19 @@ export default async function intelHiveController(req: Request, res: Response) {
       if (result.intent === "scam" && result.confidence >= 0.8) {
         session.scamDetected = true;
         session.stage = "ENGAGE";
+
+        // Append the Intel extracted from conversation history
+        for (const msg of body.conversationHistory) {
+          if (msg.sender === "scammer") {
+            extractIntel(msg.text, session.intel); // Pass the session.intel object to be mutated
+          }
+        }
+
+        console.log(
+          "Scam detected with high confidence. Session updated to ENGAGE stage.",
+        );
+
+        console.log("Extracted Intel so far:", session);
       }
     }
   } catch (error: any) {
@@ -64,23 +74,21 @@ export default async function intelHiveController(req: Request, res: Response) {
 
       // End Session
       if (
-        session.messageCount >= 15 ||
         session.intel.upiIds.length > 0 ||
         session.intel.phishingLinks.length > 0
       ) {
         // Mark session as DONE and send payload to Guvi API
         session.stage = "DONE";
+        console.log("Session marked as DONE. Sending payload to Guvi..");
         await sendPayloadToGuvi(session);
       }
 
-      console.log("Session after processing: ", session);
       return res.json({ status: "success", reply });
     }
   } catch (err: any) {
     return res.status(500).json({
       status: "error",
       message: JSON.parse(err.message).error.message,
-      xd: "RANDI",
     });
   }
 
