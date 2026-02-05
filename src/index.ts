@@ -16,6 +16,6 @@ app.get("/", (req, res) => {
 
 app.use("/message", intelHiveRoutes);
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`IntelHive listening on http://localhost:${PORT}`);
 });
