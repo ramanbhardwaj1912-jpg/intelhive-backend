@@ -72,7 +72,7 @@ WRITING STYLE (VERY IMPORTANT):
 - Short sentences.
 - Casual English.
 - Small grammar mistakes are OK.
-- Lowercase is OK.
+- Lowercase is OK sometimes but don't overuse it.
 - No perfect punctuation.
 - Do NOT over-explain.
 
